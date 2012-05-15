@@ -79,26 +79,24 @@ function timeline_initialize()
  */
 function timeline_header()
 {
-	$actionName = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
+  $actionName = Zend_Controller_Front::getInstance()->getRequest()->getActionName();
 	switch ($actionName) {
 		case 'show' :
-		case 'edit' :
-			echo js('ba-debug.min');
-			$timelineFile =  js('createTimeline');
-			print <<<EOT
-<!-- begin Timeline plugin scripts -->
-<script type="text/javascript">
-    // jQuery = jQuery.noConflict();    
-    var Timeline_urlPrefix = 'http://static.simile.mit.edu/timeline/api-2.3.1/';
-    var Timeline_parameters = "bundle=true";
-
-</script>
-<script type="text/javascript" src="http://static.simile.mit.edu/timeline/api-2.3.1/timeline-api.js"></script>
-$timelineFile
-<!-- end Timeline plugin scripts -->
-EOT;
+    case 'edit' :
+      $headScript = __v()->headScript();
+      $headScript->appendFile('http://static.simile.mit.edu/timeline/api-2.3.1/timeline-api.js');
+      $headScript->appendScript('SimileAjax.History.enabled = true; window.jQuery = SimileAjax.jQuery');
+      $timelineVars = "var Timeline_urlPrefix = 'http://static.simile.mit.edu/timeline/api-2.3.1/';var Timeline_parameters = 'bundle=true';";
+      $headScript->appendScript($timelineVars);
+      $headScript->appendFile(src('createTimeline.js', 'javascripts'));
+      if (version_compare(OMEKA_VERSION, '1.3', '<')) {
+        $headScript->prependScript('jQuery.noConflict();');
+        $headScript->prependFile('http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js');
+        echo $headScript;
+      }
 			break;
-		default:
+    default:
+      break;
 	}
 }
 
